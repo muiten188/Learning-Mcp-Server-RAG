@@ -1,0 +1,17 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary workspace files created during tests (keep the workspace folder)
+workspace/*
+!workspace/.gitkeep
+
+# Environment / local settings
+.env
+*.local
