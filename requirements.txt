@@ -1,8 +1,0 @@
-# MCP Python SDK v2 — provides MCPServer (server), ClientSession (client), stdio transport
-mcp>=2.0.0
-
-# Ollama Python client — talks to the local Ollama daemon at http://localhost:11434
-ollama>=0.4.0
-
-# Async HTTP client — used in the weather tool for Open-Meteo API calls
-httpx>=0.27.0
