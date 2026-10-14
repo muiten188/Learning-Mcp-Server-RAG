@@ -8,10 +8,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Temporary workspace files created during tests (keep the workspace folder)
+# Temporary workspace files created during tests
 workspace/*
 !workspace/.gitkeep
 
 # Environment / local settings
 .env
 *.local
+
+# IDE metadata
+.idea/

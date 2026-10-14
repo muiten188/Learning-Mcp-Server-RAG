@@ -1,0 +1,13 @@
+<aside class="sidebar">
+  <div class="brand">MCP <span>Platform</span></div>
+  <app-chat-sidebar-panel />
+  <nav>
+    <button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <svg lucideMessageCircle size="17"></svg> <span>Chat</span></button
+    ><button routerLink="/documents" routerLinkActive="active">
+      <svg lucideFiles size="17"></svg> <span>Documents</span></button
+    ><button routerLink="/settings" routerLinkActive="active">
+      <svg lucideServer size="17"></svg> <span>MCP server</span>
+    </button>
+  </nav>
+</aside>

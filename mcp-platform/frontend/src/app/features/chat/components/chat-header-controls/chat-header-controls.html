@@ -1,0 +1,14 @@
+<div class="controls">
+  <label
+    >Model
+    <select [ngModel]="store.model()" (ngModelChange)="store.model.set($event)">
+      @for (item of store.models(); track item) {
+      <option [value]="item">{{ item }}</option>
+      }
+    </select></label
+  ><span class="status" [class.offline]="mcp.servers()[0]?.status !== 'connected'"
+    >? MCP {{ mcp.servers()[0]?.status || 'unknown' }}</span
+  ><button (click)="store.debug.set(!store.debug())">
+    {{ store.debug() ? 'Hide' : 'Show' }} debug
+  </button>
+</div>

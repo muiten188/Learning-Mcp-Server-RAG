@@ -1,0 +1,18 @@
+Company FAQ — Acme Learning Corp.
+
+Q: What does Acme Learning Corp do?
+A: Acme Learning Corp builds open-source educational tools that help developers
+   learn new technologies through hands-on projects. Our flagship product is
+   "LearnByDoing", a CLI platform that generates guided coding exercises.
+
+Q: Where is Acme headquartered?
+A: We are headquartered in Hanoi, Vietnam, with remote team members across
+   Southeast Asia, Europe, and North America.
+
+Q: What is the return policy?
+A: All our products are free and open-source, so there is no return policy.
+   If you find a bug, please open an issue on our GitHub repository.
+
+Q: How can I contact support?
+A: Email support@acmelearning.example.com or join our Discord community at
+   discord.gg/acmelearning (fictional link for this demo).

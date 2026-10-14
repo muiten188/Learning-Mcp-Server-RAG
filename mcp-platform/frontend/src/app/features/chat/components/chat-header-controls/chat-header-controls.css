@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #aab4a3;
+  font-size: 13px;
+}
+select {
+  margin-left: 6px;
+  background: #252a23;
+  border: 1px solid #414b3d;
+  color: #f2f4ed;
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.status {
+  color: #bdf486;
+}
+.status.offline {
+  color: #ee9e84;
+}
+button {
+  cursor: pointer;
+  border: 1px solid #3a4536;
+  background: #252b23;
+  color: #c2d2b7;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+@media (max-width: 720px) {
+  .controls {
+    gap: 5px;
+  }
+  label {
+    font-size: 0;
+  }
+  select {
+    font-size: 12px;
+  }
+  .status {
+    display: none;
+  }
+}

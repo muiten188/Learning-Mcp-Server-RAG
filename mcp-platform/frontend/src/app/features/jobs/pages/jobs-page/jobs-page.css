@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  overflow: auto;
+}
+.content {
+  max-width: 880px;
+  width: 100%;
+  padding: 36px;
+  margin: auto;
+}
+h1 {
+  margin: 0 0 8px;
+  font:
+    700 32px 'Space Grotesk',
+    sans-serif;
+  letter-spacing: -1px;
+}
+p {
+  color: #929e8e;
+  line-height: 1.6;
+}

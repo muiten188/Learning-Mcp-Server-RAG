@@ -1,0 +1,7 @@
+<header>
+  <div class="title">
+    {{ router.url === '/documents' ? 'Documents' : router.url === '/settings' ? 'MCP server' :
+    router.url === '/jobs' ? 'Jobs' : 'Chat' }}
+  </div>
+  @if (router.url === '/') { <app-chat-header-controls /> }
+</header>

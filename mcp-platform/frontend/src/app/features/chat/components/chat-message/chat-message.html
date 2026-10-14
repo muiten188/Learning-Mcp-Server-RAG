@@ -1,0 +1,21 @@
+<article class="message" [class.user]="message.role === 'user'">
+  <div class="avatar">{{ message.role === 'user' ? 'You' : 'AI' }}</div>
+  <div class="body">
+    <div class="text">
+      <app-chat-markdown [content]="message.content || (busy ? 'Thinking?' : '')" />
+    </div>
+    @if (message.documents?.length) {
+    <div class="rag">? Context: {{ message.documents!.join(', ') }}</div>
+    }@for (call of message.tool_calls; track call.id) {
+    <details class="tool-card">
+      <summary>? {{ call.name }} <span>{{ call.content ? 'completed' : 'running' }}</span></summary>
+      <div class="tool-content">
+        <strong>Arguments</strong>
+        <pre>{{ call.arguments | json }}</pre>
+        <strong>Result</strong>
+        <pre>{{ call.content || 'Waiting?' }}</pre>
+      </div>
+    </details>
+    }
+  </div>
+</article>

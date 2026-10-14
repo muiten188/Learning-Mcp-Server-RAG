@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+header {
+  height: 74px;
+  padding: 0 32px;
+  border-bottom: 1px solid #30352d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.title {
+  font:
+    600 20px 'Space Grotesk',
+    sans-serif;
+}
+@media (max-width: 720px) {
+  header {
+    padding: 0 14px;
+  }
+}

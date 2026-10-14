@@ -1,0 +1,13 @@
+<form class="composer" (ngSubmit)="send()">
+  <textarea
+    name="draft"
+    [(ngModel)]="draft"
+    rows="2"
+    placeholder="Message the assistant?"
+    (keydown.control.enter)="send()"
+  ></textarea
+  ><button type="submit" [disabled]="busy || !draft.trim()">
+    {{ busy ? 'Working?' : 'Send' }} <svg lucideSend size="16"></svg>
+  </button>
+</form>
+<div class="hint">Ctrl + Enter to send ? Local Ollama model</div>

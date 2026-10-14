@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+.shell {
+  display: flex;
+  height: 100vh;
+  min-height: 500px;
+}
+main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  background: radial-gradient(circle at 70% 0%, #20261d, #151714 48%);
+}

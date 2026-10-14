@@ -1,0 +1,15 @@
+<div class="scroll" [appAutoScroll]="messages">
+  <div class="messages">
+    @if (messages.length === 0) {
+    <div class="welcome">
+      <div class="icon">?</div>
+      <h1>Learn MCP by using it.</h1>
+      <p>
+        Ask about a document, check the weather, or create a file. Tool calls and retrieved context
+        appear beside the answer.
+      </p>
+    </div>
+    }@for (message of messages; track $index) {
+    <app-chat-message [message]="message" [busy]="busy" /> }
+  </div>
+</div>

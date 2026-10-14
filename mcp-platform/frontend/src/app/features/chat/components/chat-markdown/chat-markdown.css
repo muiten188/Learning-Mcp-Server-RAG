@@ -1,0 +1,35 @@
+app-chat-markdown {
+  display: block;
+}
+app-chat-markdown markdown p,
+app-chat-markdown markdown ul,
+app-chat-markdown markdown ol,
+app-chat-markdown markdown pre {
+  margin: 0 0 0.85em;
+}
+app-chat-markdown markdown p:last-child {
+  margin-bottom: 0;
+}
+app-chat-markdown markdown ul,
+app-chat-markdown markdown ol {
+  padding-left: 1.5em;
+}
+app-chat-markdown markdown ul {
+  list-style: disc;
+}
+app-chat-markdown markdown ol {
+  list-style: decimal;
+}
+app-chat-markdown markdown pre {
+  overflow-x: auto;
+  padding: 14px;
+  border-radius: 9px;
+  background: #10140f;
+}
+app-chat-markdown markdown code {
+  font-family: monospace;
+}
+app-chat-markdown markdown a {
+  color: #bbf278;
+  text-decoration: underline;
+}

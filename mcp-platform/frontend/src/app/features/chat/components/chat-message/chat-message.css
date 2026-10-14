@@ -1,0 +1,76 @@
+:host {
+  display: block;
+}
+.message {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 30px;
+  width: fit-content;
+  max-width: 85%;
+}
+.message.user {
+  flex-direction: row-reverse;
+  margin-left: auto;
+}
+.avatar {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #a8dc73;
+  color: #172013;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.message.user .avatar {
+  background: #343e31;
+  color: #d0d8ca;
+}
+.body {
+  min-width: 0;
+  padding-top: 5px;
+}
+.text {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.rag {
+  margin-top: 10px;
+  color: #b7dc9d;
+  font-size: 12px;
+}
+.tool-card {
+  margin-top: 12px;
+  background: #202920;
+  border: 1px solid #3b4d36;
+  border-radius: 10px;
+  overflow: hidden;
+  color: #c4d9b9;
+}
+summary {
+  cursor: pointer;
+  padding: 11px 14px;
+  font-weight: 600;
+}
+summary span {
+  float: right;
+  color: #829479;
+  font-size: 12px;
+}
+.tool-content {
+  padding: 0 14px 12px;
+  font-size: 12px;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12px/1.5 monospace;
+  color: #bac9b4;
+}
+@media (max-width: 720px) {
+  .message {
+    max-width: 95%;
+  }
+}

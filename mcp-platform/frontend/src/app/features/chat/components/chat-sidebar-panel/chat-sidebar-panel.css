@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 20px;
+}
+.new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #bbf278;
+  color: #1b2414;
+  border: 0;
+  border-radius: 11px;
+  padding: 12px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .new {
+    padding: 10px;
+  }
+  .new span {
+    display: none;
+  }
+}

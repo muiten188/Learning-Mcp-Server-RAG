@@ -1,0 +1,12 @@
+@if (store.error()) {
+<div class="error" role="alert">{{ store.error() }}</div>
+}
+<div class="layout">
+  <app-chat-message-list [messages]="store.messages()" [busy]="store.busy()" />@if (store.debug()) {
+  <div class="debug">
+    <strong>Stream events</strong>@for (item of store.events(); track $index) {
+    <pre>{{ item }}</pre>
+    }
+  </div>
+  }<app-chat-input [busy]="store.busy()" (sendMessage)="store.send($event)" />
+</div>

@@ -1,0 +1,25 @@
+Python Tips for Beginners
+
+1. Use virtual environments.
+   Always create a venv before installing packages:
+       python -m venv .venv
+       .venv\Scripts\activate   (Windows)
+       source .venv/bin/activate (Linux/Mac)
+   This keeps your project dependencies isolated from the system Python.
+
+2. Prefer f-strings over .format() or % formatting.
+   f-strings (f"Hello {name}") are faster and more readable since Python 3.6.
+
+3. Use type hints.
+   Adding type hints like `def greet(name: str) -> str:` makes your code
+   self-documenting and helps editors catch bugs before you run the code.
+
+4. Read error messages bottom-up.
+   Python tracebacks show the most recent call last. Start at the bottom line
+   to find the actual error, then read upward to trace the call chain.
+
+5. Use `pathlib` instead of `os.path`.
+   The pathlib module provides an object-oriented interface for file paths:
+       from pathlib import Path
+       config = Path("data") / "config.json"
+   It works consistently across Windows, Linux, and macOS.

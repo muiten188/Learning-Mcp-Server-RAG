@@ -1,0 +1,27 @@
+@if (store.error()) {
+<div class="error" role="alert">{{ store.error() }}</div>
+}
+<section class="content">
+  <h1>Your knowledge base</h1>
+  <p class="muted">
+    Upload UTF-8 text or Markdown. A worker chunks and embeds each document for retrieval during
+    chat.
+  </p>
+  <label class="upload"
+    >+ Upload document
+    <input type="file" accept=".txt,.md" (change)="upload($event)" hidden /></label
+  ><button class="subtle" (click)="store.refresh()">Refresh status</button>
+  <div class="cards">
+    @for (document of store.documents(); track document.id) {
+    <div class="card">
+      <strong>{{ document.filename }}</strong
+      ><span [class.ready]="document.status === 'ready'">{{ document.status }}</span>@if
+      (document.error) {
+      <p class="error-text">{{ document.error }}</p>
+      }
+    </div>
+    } @empty {
+    <p class="muted">No documents uploaded yet.</p>
+    }
+  </div>
+</section>

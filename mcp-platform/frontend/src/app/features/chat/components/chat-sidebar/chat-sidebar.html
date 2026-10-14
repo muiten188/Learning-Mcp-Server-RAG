@@ -1,0 +1,17 @@
+<div class="label">Conversations</div>
+<div class="list">
+  @for (conversation of store.conversations(); track conversation.id) {
+  <div
+    class="conversation"
+    [class.selected]="store.activeId() === conversation.id"
+    (click)="openChat(conversation.id)"
+    (keydown.enter)="openChat(conversation.id)"
+    tabindex="0"
+  >
+    <span>{{ conversation.title }}</span
+    ><button title="Delete conversation" (click)="deleteChat(conversation.id, $event)">?</button>
+  </div>
+  } @empty {
+  <p>Your chats will appear here.</p>
+  }
+</div>

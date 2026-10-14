@@ -1,0 +1,36 @@
+:host {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+.error {
+  margin: 12px 24px 0;
+  padding: 11px 14px;
+  border-radius: 8px;
+  background: #4a2924;
+  color: #ffd1c8;
+}
+.debug {
+  max-height: 145px;
+  overflow: auto;
+  margin: 0 24px 12px;
+  padding: 12px;
+  background: #10140f;
+  border: 1px solid #364332;
+  border-radius: 10px;
+  color: #a8d391;
+}
+.debug pre {
+  margin: 6px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12px/1.5 monospace;
+  color: #bac9b4;
+}

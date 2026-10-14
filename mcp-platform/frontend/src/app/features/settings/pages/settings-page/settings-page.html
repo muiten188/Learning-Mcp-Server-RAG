@@ -1,0 +1,20 @@
+@if (store.error()) {
+<div class="error" role="alert">{{ store.error() }}</div>
+}
+<section class="content">
+  <h1>MCP tools</h1>
+  <p class="muted">The backend starts a local MCP tool server for each chat request.</p>
+  <button class="subtle" (click)="store.refresh()">Check connection</button>
+  <div class="cards">
+    @for (server of store.servers(); track server.name) {
+    <div class="card">
+      <strong>{{ server.name }}</strong
+      ><span [class.ready]="server.status === 'connected'">{{ server.status }}</span>
+      <p>{{ server.tools.join(' ? ') }}</p>
+      @if (server.error) {
+      <p class="error-text">{{ server.error }}</p>
+      }
+    </div>
+    }
+  </div>
+</section>
