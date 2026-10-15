@@ -1,14 +1,22 @@
 <div class="controls">
-  <label
-    >Model
-    <select [ngModel]="store.model()" (ngModelChange)="store.model.set($event)">
-      @for (item of store.models(); track item) {
-      <option [value]="item">{{ item }}</option>
-      }
-    </select></label
+  <div class="model-picker">
+    <span id="model-label">Model</span>
+    <div brnPopover brnSelect [value]="store.model()" (valueChange)="store.model.set($event || '')">
+      <button brnSelectTrigger type="button" aria-labelledby="model-label" class="model-trigger">{{ store.model() || 'Select model' }} <span aria-hidden="true">▾</span></button>
+      <ng-template brnPopoverContent>
+        <div brnSelectContent class="model-menu">
+          <div brnSelectList>
+            @for (item of store.models(); track item) {
+            <div brnSelectItem [value]="item" class="model-option">{{ item }}</div>
+            }
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div
   ><span class="status" [class.offline]="mcp.servers()[0]?.status !== 'connected'"
     >? MCP {{ mcp.servers()[0]?.status || 'unknown' }}</span
-  ><button (click)="store.debug.set(!store.debug())">
+  ><button brnButton type="button" (click)="store.debug.set(!store.debug())">
     {{ store.debug() ? 'Hide' : 'Show' }} debug
   </button>
 </div>

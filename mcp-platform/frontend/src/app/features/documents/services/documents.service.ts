@@ -7,6 +7,7 @@ import { Document } from '../models/document.model';
 export class DocumentsService {
   readonly documents = signal<Document[]>([]);
   readonly error = signal('');
+  readonly uploading = signal(false);
 
   /**
    * Loads the current document status list.
@@ -28,10 +29,30 @@ export class DocumentsService {
    * @returns A promise that resolves after the upload and refresh complete.
    */
   async upload(file: File): Promise<void> {
+    if (this.uploading()) return;
+    this.uploading.set(true);
+    this.error.set('');
     try {
       const body = new FormData();
       body.append('file', file);
       const response = await fetch(API_PATHS.documents, { method: 'POST', body });
+      if (!response.ok) throw new Error(await response.text());
+      await this.refresh();
+    } catch (error) {
+      this.error.set(String(error));
+    } finally {
+      this.uploading.set(false);
+    }
+  }
+
+  /**
+   * Queues embedding for all documents still pending and reloads their status.
+   * @returns A promise that resolves after the request and refresh complete.
+   */
+  async embedPending(): Promise<void> {
+    try {
+      this.error.set('');
+      const response = await fetch(API_PATHS.embedPending, { method: 'POST' });
       if (!response.ok) throw new Error(await response.text());
       await this.refresh();
     } catch (error) {

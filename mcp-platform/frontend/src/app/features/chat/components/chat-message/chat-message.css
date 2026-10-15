@@ -3,7 +3,7 @@
 }
 .message {
   display: flex;
-  gap: 16px;
+  gap: var(--space-16);
   margin-bottom: 30px;
   width: fit-content;
   max-width: 85%;
@@ -22,7 +22,7 @@
   display: grid;
   place-items: center;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 .message.user .avatar {
   background: #343e31;
@@ -37,37 +37,50 @@
   overflow-wrap: anywhere;
 }
 .rag {
-  margin-top: 10px;
+  margin-top: var(--space-10);
   color: #b7dc9d;
   font-size: 12px;
 }
 .tool-card {
-  margin-top: 12px;
+  margin-top: var(--space-12);
   background: #202920;
   border: 1px solid #3b4d36;
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   overflow: hidden;
   color: #c4d9b9;
 }
-summary {
+.tool-trigger {
+  display: block;
+  width: var(--size-full);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
   padding: 11px 14px;
   font-weight: 600;
 }
-summary span {
+.tool-trigger:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.tool-trigger span {
   float: right;
   color: #829479;
   font-size: 12px;
 }
 .tool-content {
-  padding: 0 14px 12px;
+  padding: 0 14px var(--space-12);
   font-size: 12px;
+}
+.tool-content[data-state='closed'] {
+  display: none;
 }
 pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: 12px/1.5 monospace;
-  color: #bac9b4;
+  color: var(--color-code-text);
 }
 @media (max-width: 720px) {
   .message {

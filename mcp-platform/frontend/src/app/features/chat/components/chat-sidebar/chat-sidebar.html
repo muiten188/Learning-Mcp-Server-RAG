@@ -9,7 +9,14 @@
     tabindex="0"
   >
     <span>{{ conversation.title }}</span
-    ><button title="Delete conversation" (click)="deleteChat(conversation.id, $event)">?</button>
+    ><button
+      brnButton
+      type="button"
+      title="Delete conversation"
+      (click)="deleteChat(conversation.id, $event)"
+    >
+      ?
+    </button>
   </div>
   } @empty {
   <p>Your chats will appear here.</p>

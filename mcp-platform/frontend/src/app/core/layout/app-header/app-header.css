@@ -4,19 +4,43 @@
 header {
   height: 74px;
   padding: 0 32px;
-  border-bottom: 1px solid #30352d;
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-12);
 }
 .title {
-  font:
-    600 20px 'Space Grotesk',
-    sans-serif;
+  font: 600 20px var(--font-display);
+}
+.menu-toggle {
+  display: none;
 }
 @media (max-width: 720px) {
   header {
-    padding: 0 14px;
+    min-height: 60px;
+    height: auto;
+    padding: var(--space-10) var(--space-16);
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .menu-toggle {
+    display: grid;
+    flex: none;
+    width: var(--size-touch-target);
+    height: var(--size-touch-target);
+    place-items: center;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .menu-toggle:focus-visible {
+    outline: 2px solid var(--color-focus);
+  }
+  .title {
+    font-size: 18px;
+    white-space: nowrap;
   }
 }

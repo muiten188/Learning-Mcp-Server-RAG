@@ -9,7 +9,7 @@ A minimal, educational project that demonstrates how the **Model Context Protoco
 | Phase | Scope | Status |
 |-------|-------|--------|
 | 1 | 🧪 **TEST / prototype** — CLI chat host + one MCP server (stdio) + keyword RAG | ✅ Done (test only) |
-| 2 | Web platform: FastAPI backend, PostgreSQL + pgvector, Angular chat UI — **can be a new project** | 🚧 Planned — see [Web Platform](#web-platform-phase-2) |
+| 2 | Web platform: FastAPI backend, PostgreSQL + pgvector, Angular chat UI — **can be a new project** | 🚧 In progress — frontend ~50% complete; backend starting. See [Web Platform](#web-platform-phase-2) |
 | 3 | Runtime model switching + multi-server MCP hub | 🚧 Planned — see [Model switching](#feature-switch-model-from-the-ui) and [Multi-server MCP](#feature-multi-server-mcp-hub) |
 | 4 | Containerised deployment with Podman (7 containers) | 🚧 Planned — see [Deployment with Podman](#deployment-with-podman-phase-4) |
 
@@ -234,6 +234,8 @@ This opens a browser UI where you can:
 
 # Web Platform (Phase 2)
 
+**Current status:** Frontend ~50% complete; backend development is starting.
+
 > 🚀 **New project (if needed).** Phase 1 was only a test. If the test shows the CLI code isn't a good base (e.g. the tool loop is tangled with the CLI, or one `server.py` is too limiting), start Phase 2 as a **fresh project** — for example `mcp-platform/` — and port over only the pieces that proved useful. The structure below is written as a clean layout and doesn't depend on the Phase 1 folder.
 >
 > **What to carry over from the Phase 1 test:** the tool-calling loop logic, the MCP tool definitions (`create_file`, `get_weather`, `crawl_webpage`, …), the RAG seed files in `data/`, and the notes on which models handle tool calls well.
@@ -303,7 +305,7 @@ flowchart LR
 | **Frontend framework** | Angular 22 | SPA, signals-based state, standalone components |
 | **AI chat state** | TanStack AI | Streaming chat state/hooks (see the note in [Frontend](#frontend)) |
 | **UI components** | Spartan UI *or* Zard UI | Accessible, unstyled/shadcn-style Angular components |
-| **Styling** | Tailwind CSS | Utility-first styling, dark mode |
+| **Styling** | Component CSS | Separate stylesheets for Angular components, dark mode |
 | **Icons** | Lucide Angular | Consistent icon set |
 | **Markdown** | ngx-markdown | Render assistant answers (code blocks, tables, lists) |
 
@@ -608,7 +610,7 @@ This replaces the keyword matching in `rag.py` (see "What to try next", item 3).
 
 ### Stack
 
-**Angular 22 + TanStack AI + Spartan UI (or Zard UI) + Tailwind CSS + Lucide Angular + ngx-markdown**
+**Angular 22 + TanStack AI + Spartan UI (or Zard UI) + component CSS + Lucide Angular + ngx-markdown**
 
 > ⚠️ **Verify before committing to TanStack AI.** TanStack AI is a newer library and its framework support has focused on React/Solid-style hooks first. Check that an **Angular adapter** exists and supports custom (non-OpenAI) SSE streams like ours. If it doesn't, the fallback is small and keeps the same architecture: an Angular `ChatService` that consumes the SSE stream with `fetch` + `ReadableStream` and stores messages in **signals**.
 
@@ -621,7 +623,7 @@ This replaces the keyword matching in `rag.py` (see "What to try next", item 3).
 | Customisation | High — you own the helm layer | High — you own the code |
 | Best for | Long-lived apps that need robust a11y | Fast start with a ChatGPT/shadcn look |
 
-**Suggestion:** start with **Spartan UI** for its accessibility primitives (dialog, select, dropdown, tabs). Both work with Tailwind, so switching later is not painful.
+**Suggestion:** start with **Spartan UI** for its accessibility primitives (dialog, select, dropdown, tabs). Keep application styles in component CSS files.
 
 ### UI design (ChatGPT-style)
 
@@ -685,7 +687,6 @@ import { LucideAngularModule, Send, Plus, Wrench, Server, FileText } from 'lucid
 cd frontend
 npm install -g @angular/cli
 ng new frontend --style=css --routing --ssr=false
-npm install tailwindcss @tailwindcss/postcss postcss
 npm install lucide-angular ngx-markdown marked
 # UI kit: follow the Spartan UI (spartan.ng) or Zard UI (zardui.com) install guide
 ng serve   # http://localhost:4200

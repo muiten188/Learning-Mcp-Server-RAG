@@ -7,15 +7,15 @@
     @if (message.documents?.length) {
     <div class="rag">? Context: {{ message.documents!.join(', ') }}</div>
     }@for (call of message.tool_calls; track call.id) {
-    <details class="tool-card">
-      <summary>? {{ call.name }} <span>{{ call.content ? 'completed' : 'running' }}</span></summary>
-      <div class="tool-content">
+    <div brnCollapsible class="tool-card">
+      <button brnButton brnCollapsibleTrigger type="button" class="tool-trigger">? {{ call.name }} <span>{{ call.content ? 'completed' : 'running' }}</span></button>
+      <div brnCollapsibleContent class="tool-content">
         <strong>Arguments</strong>
         <pre>{{ call.arguments | json }}</pre>
         <strong>Result</strong>
         <pre>{{ call.content || 'Waiting?' }}</pre>
       </div>
-    </details>
+    </div>
     }
   </div>
 </article>

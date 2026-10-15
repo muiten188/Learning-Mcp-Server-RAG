@@ -8,6 +8,7 @@
     "format": "prettier --write \"src/**/*.{ts,html,css}\" angular.json package.json tsconfig.json tsconfig.app.json proxy.conf.json"
   },
   "dependencies": {
+    "@angular/cdk": "^22.2.3",
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",
@@ -15,6 +16,7 @@
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
     "@lucide/angular": "^1.57.0",
+    "@spartan-ng/brain": "^1.7.0",
     "@tanstack/ai": "^0.69.0",
     "@tanstack/ai-angular": "^0.13.4",
     "@tanstack/ai-client": "^0.39.3",

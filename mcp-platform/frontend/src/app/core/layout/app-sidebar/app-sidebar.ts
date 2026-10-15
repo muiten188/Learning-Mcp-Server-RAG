@@ -1,6 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideFiles, LucideMessageCircle, LucideServer } from '@lucide/angular';
+import {
+  LucideBookOpen,
+  LucideFiles,
+  LucideMessageCircle,
+  LucideServer,
+  LucideX,
+} from '@lucide/angular';
+import { BrnButton } from '@spartan-ng/brain/button';
 import { ChatSidebarPanel } from '../../../features/chat/components/chat-sidebar-panel/chat-sidebar-panel';
 
 /** Displays application navigation and conversation shortcuts. */
@@ -10,12 +17,17 @@ import { ChatSidebarPanel } from '../../../features/chat/components/chat-sidebar
   imports: [
     RouterLink,
     RouterLinkActive,
+    BrnButton,
     ChatSidebarPanel,
     LucideFiles,
+    LucideBookOpen,
     LucideMessageCircle,
     LucideServer,
+    LucideX,
   ],
   templateUrl: './app-sidebar.html',
   styleUrl: './app-sidebar.css',
 })
-export class AppSidebar {}
+export class AppSidebar {
+  readonly navigation = output<void>();
+}

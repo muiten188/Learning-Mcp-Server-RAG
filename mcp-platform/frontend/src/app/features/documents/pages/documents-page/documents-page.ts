@@ -1,10 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { BrnButton } from '@spartan-ng/brain/button';
+import { BrnInput } from '@spartan-ng/brain/input';
 import { DocumentsService } from '../../services/documents.service';
 
 /** Displays uploaded documents and their ingestion status. */
 @Component({
   selector: 'app-documents-page',
   standalone: true,
+  imports: [BrnButton, BrnInput],
   templateUrl: './documents-page.html',
   styleUrl: './documents-page.css',
 })

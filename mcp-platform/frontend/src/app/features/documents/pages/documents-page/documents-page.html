@@ -7,10 +7,29 @@
     Upload UTF-8 text or Markdown. A worker chunks and embeds each document for retrieval during
     chat.
   </p>
-  <label class="upload"
-    >+ Upload document
-    <input type="file" accept=".txt,.md" (change)="upload($event)" hidden /></label
-  ><button class="subtle" (click)="store.refresh()">Refresh status</button>
+  <input
+    #fileInput
+    brnInput
+    type="file"
+    accept=".txt,.md"
+    (change)="upload($event)"
+    [disabled]="store.uploading()"
+    hidden
+  />
+  <button
+    brnButton
+    class="upload"
+    type="button"
+    (click)="fileInput.click()"
+    [disabled]="store.uploading()"
+    [attr.aria-busy]="store.uploading()"
+  >
+    @if (store.uploading()) {
+    <span class="upload-spinner" aria-hidden="true"></span> Uploading... } @else { + Upload document
+    }
+  </button>
+  <button brnButton class="subtle" (click)="store.refresh()">Refresh status</button>
+  <button brnButton class="subtle" (click)="store.embedPending()">Embed pending</button>
   <div class="cards">
     @for (document of store.documents(); track document.id) {
     <div class="card">

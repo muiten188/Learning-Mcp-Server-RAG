@@ -3,25 +3,24 @@
 import asyncio
 from pathlib import Path
 
-from sqlalchemy import select
-
 from app.core.db import SessionLocal, engine
-from app.models import Document
-from app.workers.tasks import ingest
+from app.features.documents.ingestion import ingest
+from app.features.documents.models import Document
+from app.features.documents.repository import DocumentRepository
 
 
-async def main():
+async def main() -> None:
+    """Import new seed text files and index their contents."""
     data_dir = Path(__file__).resolve().parents[2] / "data"
     for path in sorted(data_dir.glob("*.txt")):
         async with SessionLocal() as db:
-            existing = await db.scalar(
-                select(Document.id).where(Document.filename == path.name).limit(1)
-            )
+            repository = DocumentRepository(db)
+            existing = await repository.get_by_filename(path.name)
             if existing is not None:
                 print(f"Skipping {path.name}: already present")
                 continue
             document = Document(filename=path.name, storage_path=str(path))
-            db.add(document)
+            repository.add(document)
             await db.commit()
             print(f"Indexing {path.name}")
             await ingest(document.id)

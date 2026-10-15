@@ -4,7 +4,7 @@
 <section class="content">
   <h1>MCP tools</h1>
   <p class="muted">The backend starts a local MCP tool server for each chat request.</p>
-  <button class="subtle" (click)="store.refresh()">Check connection</button>
+  <button brnButton class="subtle" (click)="store.refresh()">Check connection</button>
   <div class="cards">
     @for (server of store.servers(); track server.name) {
     <div class="card">

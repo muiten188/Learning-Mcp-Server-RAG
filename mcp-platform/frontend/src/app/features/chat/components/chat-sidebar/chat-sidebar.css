@@ -9,8 +9,8 @@
   color: #868f80;
   letter-spacing: 1.4px;
   font-size: 11px;
-  font-weight: 700;
-  margin-top: 8px;
+  font-weight: var(--font-weight-bold);
+  margin-top: var(--space-8);
 }
 .list {
   flex: 1;
@@ -20,11 +20,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
+  padding: var(--space-10);
   border-radius: 9px;
   color: #bac2b4;
   cursor: pointer;
-  gap: 8px;
+  gap: var(--space-8);
 }
 .conversation:hover,
 .conversation.selected {
@@ -44,12 +44,6 @@
   cursor: pointer;
 }
 p {
-  color: #929e8e;
+  color: var(--color-muted);
   line-height: 1.6;
-}
-@media (max-width: 720px) {
-  .label,
-  .list {
-    font-size: 0;
-  }
 }

@@ -6,4 +6,5 @@ export const API_PATHS = {
   models: `${API_BASE_URL}/models`,
   servers: `${API_BASE_URL}/mcp-servers`,
   documents: `${API_BASE_URL}/documents`,
+  embedPending: `${API_BASE_URL}/documents/embed-pending`,
 } as const;

@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, output } from '@angular/core';
 import { Router } from '@angular/router';
 import { LucidePlus } from '@lucide/angular';
+import { BrnButton } from '@spartan-ng/brain/button';
 import { ChatStore } from '../../state/chat.store';
 import { ChatSidebar } from '../chat-sidebar/chat-sidebar';
 
@@ -8,11 +9,12 @@ import { ChatSidebar } from '../chat-sidebar/chat-sidebar';
 @Component({
   selector: 'app-chat-sidebar-panel',
   standalone: true,
-  imports: [LucidePlus, ChatSidebar],
+  imports: [LucidePlus, ChatSidebar, BrnButton],
   templateUrl: './chat-sidebar-panel.html',
   styleUrl: './chat-sidebar-panel.css',
 })
 export class ChatSidebarPanel implements OnInit {
+  readonly navigation = output<void>();
   private readonly store = inject(ChatStore);
   private readonly router = inject(Router);
 
@@ -31,5 +33,6 @@ export class ChatSidebarPanel implements OnInit {
   newChat(): void {
     this.store.newChat();
     void this.router.navigateByUrl('/');
+    this.navigation.emit();
   }
 }

@@ -1,10 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { BrnButton } from '@spartan-ng/brain/button';
 import { McpServersService } from '../../../../core/mcp/mcp-servers.service';
 
 /** Displays MCP server connection and tool status. */
 @Component({
   selector: 'app-settings-page',
   standalone: true,
+  imports: [BrnButton],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.css',
 })

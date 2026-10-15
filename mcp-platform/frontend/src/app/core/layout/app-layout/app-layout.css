@@ -6,10 +6,27 @@
   height: 100vh;
   min-height: 500px;
 }
+.menu-backdrop {
+  display: none;
+}
 main {
   display: flex;
   flex: 1;
   min-width: 0;
   flex-direction: column;
-  background: radial-gradient(circle at 70% 0%, #20261d, #151714 48%);
+  background: radial-gradient(circle at 70% 0%, #20261d, var(--color-background) 48%);
+}
+@media (max-width: 720px) {
+  .shell {
+    height: var(--size-viewport-height);
+    min-height: 0;
+  }
+  .menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    border: 0;
+    background: var(--color-menu-backdrop);
+  }
 }

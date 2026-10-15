@@ -1,4 +1,14 @@
 <header>
+  <button
+    class="menu-toggle"
+    type="button"
+    [attr.aria-expanded]="menuOpen()"
+    aria-controls="mobile-sidebar"
+    [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'"
+    (click)="menuToggle.emit()"
+  >
+    @if (menuOpen()) { <svg lucideX size="20"></svg> } @else { <svg lucideMenu size="20"></svg> }
+  </button>
   <div class="title">
     {{ router.url === '/documents' ? 'Documents' : router.url === '/settings' ? 'MCP server' :
     router.url === '/jobs' ? 'Jobs' : 'Chat' }}

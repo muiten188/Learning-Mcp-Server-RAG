@@ -24,12 +24,12 @@ app-chat-markdown markdown pre {
   overflow-x: auto;
   padding: 14px;
   border-radius: 9px;
-  background: #10140f;
+  background: var(--color-code-background);
 }
 app-chat-markdown markdown code {
   font-family: monospace;
 }
 app-chat-markdown markdown a {
-  color: #bbf278;
+  color: var(--color-accent);
   text-decoration: underline;
 }

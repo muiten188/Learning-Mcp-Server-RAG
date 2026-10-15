@@ -9,5 +9,6 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def get_db() -> AsyncIterator[AsyncSession]:
+    """Yield a short-lived database session for an API request."""
     async with SessionLocal() as session:
         yield session

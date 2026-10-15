@@ -1,13 +1,36 @@
 <aside class="sidebar">
   <div class="brand">MCP <span>Platform</span></div>
-  <app-chat-sidebar-panel />
+  <button class="close-menu" type="button" aria-label="Close menu" (click)="navigation.emit()">
+    <svg lucideX size="20"></svg>
+  </button>
+  <app-chat-sidebar-panel (navigation)="navigation.emit()" />
   <nav>
-    <button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    <button
+      brnButton
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      (click)="navigation.emit()"
+    >
       <svg lucideMessageCircle size="17"></svg> <span>Chat</span></button
-    ><button routerLink="/documents" routerLinkActive="active">
+    ><button
+      brnButton
+      routerLink="/documents"
+      routerLinkActive="active"
+      (click)="navigation.emit()"
+    >
       <svg lucideFiles size="17"></svg> <span>Documents</span></button
-    ><button routerLink="/settings" routerLinkActive="active">
+    ><button brnButton routerLink="/settings" routerLinkActive="active" (click)="navigation.emit()">
       <svg lucideServer size="17"></svg> <span>MCP server</span>
     </button>
+    <a
+      brnButton
+      href="/api/docs"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Open API documentation in a new tab"
+    >
+      <svg lucideBookOpen size="17"></svg> <span>API docs</span>
+    </a>
   </nav>
 </aside>

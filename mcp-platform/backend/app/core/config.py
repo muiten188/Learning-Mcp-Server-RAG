@@ -7,6 +7,8 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
+    """Typed configuration loaded from the platform environment."""
+
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR.parent / ".env", extra="ignore"
     )
@@ -21,13 +23,16 @@ class Settings(BaseSettings):
 
     @property
     def server_path(self) -> Path:
+        """Resolve the configured MCP server script relative to the backend."""
         return (BACKEND_DIR / self.mcp_server_script).resolve()
 
     @property
     def upload_path(self) -> Path:
+        """Resolve the configured upload directory relative to the backend."""
         return (BACKEND_DIR / self.upload_dir).resolve()
 
 
 @lru_cache
 def get_settings() -> Settings:
+    """Return the cached backend settings instance."""
     return Settings()

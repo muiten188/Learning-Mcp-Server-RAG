@@ -5,6 +5,8 @@
 - Prefer simple, maintainable solutions.
 - Do not introduce dependencies unless requested.
 - Do not modify unrelated code.
+- For every task involving `mcp-platform/frontend`, read and follow
+  `.agents/skills/angular-standard/SKILL.md` alongside this file.
 
 ## Java
 - Always generate JavaDoc for new public and protected methods.

@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import '@angular/cdk/overlay-prebuilt.css';
+@import './variables.css';
 :root {
   color-scheme: dark;
 }
@@ -7,8 +9,8 @@
 }
 body {
   margin: 0;
-  background: #151714;
-  color: #e9e9e5;
+  background: var(--color-background);
+  color: var(--color-text);
   font-family: 'DM Sans', sans-serif;
   font-synthesis: none;
 }

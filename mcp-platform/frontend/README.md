@@ -4,15 +4,16 @@ This is the Angular 22 UI for the MCP Platform. It provides streamed chat with v
 
 ## Tech stack
 
-| Layer              | Technology          | Purpose                                                            |
-| ------------------ | ------------------- | ------------------------------------------------------------------ |
-| Frontend framework | Angular 22          | SPA, signals-based state, standalone components                    |
-| AI chat state      | TanStack AI Angular | Streaming chat state with an adapter for the backend SSE format    |
-| Styling            | Component CSS       | Separate stylesheets for Angular components                      |
-| Icons              | @lucide/angular     | Consistent icon set                                                |
-| Markdown           | ngx-markdown        | Render assistant answers, including code blocks, tables, and lists |
+| Layer              | Technology                            | Purpose                                                            |
+| ------------------ | ------------------------------------- | ------------------------------------------------------------------ |
+| Frontend framework | Angular 22                            | SPA, signals-based state, standalone components                    |
+| AI chat state      | TanStack AI Angular                   | Streaming chat state with an adapter for the backend SSE format    |
+| UI components      | Spartan UI brain                      | Accessible behavior for interactive controls                       |
+| Styling            | Component CSS                         | Separate stylesheets for Angular components                        |
+| Icons              | @lucide/angular                       | Consistent icon set                                                |
+| Markdown           | ngx-markdown                          | Render assistant answers, including code blocks, tables, and lists |
 
-`ChatStore` uses TanStack AI Angular for chat state. Its custom stream connection converts the backend's SSE events into TanStack AI stream chunks. Component CSS files style each Angular view, Lucide supplies icons, and ngx-markdown renders assistant messages.
+`ChatStore` uses TanStack AI Angular for chat state. Its custom stream connection converts the backend's SSE events into TanStack AI stream chunks. Component CSS files style Angular views. Spartan UI brain supplies button, input, model select, and collapsible tool result behavior; Lucide supplies icons, and ngx-markdown renders assistant messages. The root README also mentions Zard UI as an alternative; this app uses Spartan UI.
 
 ## Run locally
 

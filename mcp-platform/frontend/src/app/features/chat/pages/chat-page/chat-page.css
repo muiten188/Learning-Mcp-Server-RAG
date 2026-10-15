@@ -11,20 +11,20 @@
   flex-direction: column;
 }
 .error {
-  margin: 12px 24px 0;
+  margin: var(--space-12) var(--space-24) 0;
   padding: 11px 14px;
-  border-radius: 8px;
-  background: #4a2924;
-  color: #ffd1c8;
+  border-radius: var(--radius-8);
+  background: var(--color-error-background);
+  color: var(--color-error-text);
 }
 .debug {
   max-height: 145px;
   overflow: auto;
-  margin: 0 24px 12px;
-  padding: 12px;
-  background: #10140f;
+  margin: 0 var(--space-24) var(--space-12);
+  padding: var(--space-12);
+  background: var(--color-code-background);
   border: 1px solid #364332;
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   color: #a8d391;
 }
 .debug pre {
@@ -32,5 +32,13 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: 12px/1.5 monospace;
-  color: #bac9b4;
+  color: var(--color-code-text);
+}
+@media (max-width: 720px) {
+  .error {
+    margin: var(--space-12) var(--space-16) 0;
+  }
+  .debug {
+    margin: 0 var(--space-16) var(--space-12);
+  }
 }
