@@ -1,6 +1,6 @@
 # Phase 2 web app
 
-This project implements the Phase 2 core from the [root README](../README.md): FastAPI hosts an MCP stdio client and Ollama chat loop, PostgreSQL stores conversations and vector documents, Celery indexes uploads through Redis, and Angular renders streamed chat, tool calls, retrieved document names, conversation history, server status, and document status. The Phase 1 tool server and `data/*.txt` are copied into this project. Phase 3 server registration and model switching are outside this phase, though the API lists installed Ollama models and the chat UI can choose one.
+This project implements the Phase 2 core from the [root README](../README.md): FastAPI hosts an HTTP MCP hub and Ollama chat loop, PostgreSQL stores conversations and vector documents, Celery indexes uploads through Redis, and Angular renders streamed chat, tool calls, retrieved document names, conversation history, per-server status, and document status. Five independently deployed MCP server containers are configured in `mcp_servers.container.json`; `mcp_servers.json` holds host-accessible URLs. The older `servers/tools.py` remains for the CLI prototype. Runtime server registration through the API is still outside this phase.
 
 ## Requirements
 
@@ -14,12 +14,22 @@ This project implements the Phase 2 core from the [root README](../README.md): F
 From the project root, start infrastructure and pull models:
 
 ```powershell
-docker compose up -d
-ollama pull llama3.1
-ollama pull nomic-embed-text
+docker compose up -d --build
+docker compose exec ollama ollama pull llama3.1
+docker compose exec ollama ollama pull nomic-embed-text
+docker compose exec api alembic upgrade head
+docker compose exec api python -m app.seed
 ```
 
-In `backend`, create a virtual environment, install dependencies, migrate, import the copied seed files, and run the API:
+For host-run backend development, instead start only the infrastructure and MCP services:
+
+```powershell
+docker compose up -d --build postgres redis ollama mcp-files mcp-weather mcp-database mcp-documents mcp-web
+docker compose exec ollama ollama pull llama3.1
+docker compose exec ollama ollama pull nomic-embed-text
+```
+
+In `backend`, create a virtual environment, install dependencies, migrate, import seed files, and run the API:
 
 ```powershell
 python -m venv .venv

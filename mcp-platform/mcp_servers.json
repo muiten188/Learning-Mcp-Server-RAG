@@ -1,0 +1,7 @@
+[
+  {"name": "files", "url": "http://127.0.0.1:8101/mcp", "enabled": true},
+  {"name": "weather", "url": "http://127.0.0.1:8102/mcp", "enabled": true},
+  {"name": "database", "url": "http://127.0.0.1:8103/mcp", "enabled": true},
+  {"name": "documents", "url": "http://127.0.0.1:8104/mcp", "enabled": true},
+  {"name": "web", "url": "http://127.0.0.1:8105/mcp", "enabled": true}
+]

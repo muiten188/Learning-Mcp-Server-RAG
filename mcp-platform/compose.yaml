@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: mcp
       POSTGRES_DB: mcp
     ports:
-      - "0.0.0.0:5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,10 +16,119 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "0.0.0.0:6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       retries: 10
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+  api:
+    build:
+      context: .
+      dockerfile: backend/Containerfile
+    environment: &backend_environment
+      DATABASE_URL: postgresql+asyncpg://mcp:mcp@postgres:5432/mcp
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      MCP_SERVERS_FILE: ../mcp_servers.container.json
+      UPLOAD_DIR: ../uploads
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./uploads:/mcp-platform/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Containerfile
+    command: ["celery", "-A", "app.workers.celery_app", "worker", "--loglevel=info", "--pool=solo"]
+    environment: *backend_environment
+    volumes:
+      - ./uploads:/mcp-platform/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Containerfile
+    ports:
+      - "127.0.0.1:4200:80"
+    depends_on:
+      - api
+  mcp-files:
+    build:
+      context: ./mcp_servers
+      dockerfile: Containerfile
+      args:
+        SERVICE: files
+        PORT: 8101
+    environment:
+      MCP_WORKSPACE: /workspace
+    volumes:
+      - ./workspace:/workspace
+    ports:
+      - "127.0.0.1:8101:8101"
+  mcp-weather:
+    build:
+      context: ./mcp_servers
+      dockerfile: Containerfile
+      args:
+        SERVICE: weather
+        PORT: 8102
+    ports:
+      - "127.0.0.1:8102:8102"
+  mcp-database:
+    build:
+      context: ./mcp_servers
+      dockerfile: Containerfile
+      args:
+        SERVICE: database
+        PORT: 8103
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mcp:mcp@postgres:5432/mcp
+    ports:
+      - "127.0.0.1:8103:8103"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  mcp-documents:
+    build:
+      context: ./mcp_servers
+      dockerfile: Containerfile
+      args:
+        SERVICE: documents
+        PORT: 8104
+    environment:
+      BACKEND_API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:8104:8104"
+    depends_on:
+      - api
+  mcp-web:
+    build:
+      context: ./mcp_servers
+      dockerfile: Containerfile
+      args:
+        SERVICE: web
+        PORT: 8105
+    ports:
+      - "127.0.0.1:8105:8105"
 volumes:
   pgdata:
+  ollama_data:

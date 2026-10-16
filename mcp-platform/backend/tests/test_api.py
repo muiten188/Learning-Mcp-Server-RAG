@@ -78,20 +78,14 @@ def test_embed_pending_queues_each_pending_document() -> None:
     ]
 
 
-def test_legacy_python_imports_remain_available() -> None:
-    """Keep existing import paths usable by external scripts and tests."""
+def test_remaining_legacy_python_imports_remain_available() -> None:
+    """Keep the remaining compatibility imports usable by external scripts."""
     from app.features.conversations.models import Conversation
     from app.features.documents.tasks import ingest_document
-    from app.features.mcp.client import tool_session
-    from app.integrations.ollama.client import Ollama
     from app.models import Conversation as LegacyConversation
-    from app.services.mcp_tools import tool_session as legacy_tool_session
-    from app.services.ollama import Ollama as LegacyOllama
     from app.workers.tasks import ingest_document as legacy_ingest_document
 
     assert LegacyConversation is Conversation
-    assert legacy_tool_session is tool_session
-    assert LegacyOllama is Ollama
     assert legacy_ingest_document is ingest_document
 
 

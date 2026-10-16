@@ -4,11 +4,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.documents.models import Document, DocumentChunk
+from app.features.rag.schemas import RetrievedChunk
 
 
 async def nearest_chunks(
     db: AsyncSession, vector: list[float], limit: int
-) -> list[tuple[str, str]]:
+) -> list[RetrievedChunk]:
     """Return filename and text pairs nearest to an embedding."""
     stmt = (
         select(Document.filename, DocumentChunk.content)
@@ -17,7 +18,10 @@ async def nearest_chunks(
         .order_by(DocumentChunk.embedding.cosine_distance(vector))
         .limit(limit)
     )
-    return list((await db.execute(stmt)).all())
+    return [
+        RetrievedChunk(filename=filename, content=content)
+        for filename, content in (await db.execute(stmt)).all()
+    ]
 
 
 async def has_chunks(db: AsyncSession) -> bool:

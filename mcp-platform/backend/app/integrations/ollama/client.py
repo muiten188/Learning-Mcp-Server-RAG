@@ -1,10 +1,17 @@
 import json
 from collections.abc import AsyncIterator
-from typing import Any
 
 import httpx
 
 from app.core.config import get_settings
+from app.features.mcp.contracts import ToolDefinition
+from app.integrations.ollama.schemas import (
+    ChatMessage,
+    ChatResponse,
+    EmbedResponse,
+    ModelListResponse,
+    StreamResponse,
+)
 
 
 class Ollama:
@@ -16,25 +23,27 @@ class Ollama:
     async def chat(
         self,
         model: str,
-        messages: list[dict[str, Any]],
-        tools: list[dict[str, Any]] | None = None,
-    ) -> dict[str, Any]:
+        messages: list[ChatMessage],
+        tools: list[ToolDefinition] | None = None,
+    ) -> ChatMessage:
         """Request one non-streamed assistant message from Ollama."""
         async with httpx.AsyncClient(timeout=180) as client:
             response = await client.post(
                 f"{self.base_url}/api/chat",
                 json={
                     "model": model,
-                    "messages": messages,
+                    "messages": [
+                        message.model_dump(exclude_none=True) for message in messages
+                    ],
                     "tools": tools or [],
                     "stream": False,
                 },
             )
             response.raise_for_status()
-            return response.json()["message"]
+            return ChatResponse.model_validate(response.json()).message
 
     async def stream(
-        self, model: str, messages: list[dict[str, Any]]
+        self, model: str, messages: list[ChatMessage]
     ) -> AsyncIterator[str]:
         """Yield assistant text tokens from Ollama's streaming chat API."""
         async with (
@@ -42,16 +51,23 @@ class Ollama:
             client.stream(
                 "POST",
                 f"{self.base_url}/api/chat",
-                json={"model": model, "messages": messages, "stream": True},
+                json={
+                    "model": model,
+                    "messages": [
+                        message.model_dump(exclude_none=True) for message in messages
+                    ],
+                    "stream": True,
+                },
             ) as response,
         ):
             response.raise_for_status()
             async for line in response.aiter_lines():
                 if line:
-                    item = json.loads(line)
-                    if item.get("error"):
-                        raise RuntimeError(item["error"])
-                    yield item.get("message", {}).get("content", "")
+                    item = StreamResponse.model_validate(json.loads(line))
+                    if item.error:
+                        raise RuntimeError(item.error)
+                    if item.message:
+                        yield item.message.content
 
     async def embed(self, text: str) -> list[float]:
         """Create an embedding with the configured model."""
@@ -61,11 +77,12 @@ class Ollama:
                 json={"model": get_settings().embedding_model, "input": text},
             )
             response.raise_for_status()
-            return response.json()["embeddings"][0]
+            return EmbedResponse.model_validate(response.json()).embeddings[0]
 
     async def models(self) -> list[str]:
         """List model names installed in Ollama."""
         async with httpx.AsyncClient(timeout=15) as client:
             response = await client.get(f"{self.base_url}/api/tags")
             response.raise_for_status()
-            return [item["name"] for item in response.json().get("models", [])]
+            payload = ModelListResponse.model_validate(response.json())
+            return [item.name for item in payload.models]

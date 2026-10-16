@@ -2,6 +2,7 @@
 
 import asyncio
 from pathlib import Path
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -84,6 +85,22 @@ class DocumentService:
             )
             for row in rows
         ]
+
+    async def get_status(self, document_id: UUID) -> DocumentStatus | None:
+        """Return one document's public ingestion state by UUID.
+
+        Args:
+            document_id: Identifier of the document to load.
+
+        Returns:
+            Document status, or None when the document does not exist.
+        """
+        row = await self._repository.get(document_id)
+        if row is None:
+            return None
+        return DocumentStatus(
+            id=row.id, filename=row.filename, status=row.status, error=row.error
+        )
 
     async def queue_pending(self) -> PendingIngestionResponse:
         """Send every pending document to the existing Celery ingestion task."""

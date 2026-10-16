@@ -5,13 +5,15 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.core.json_types import JsonValue
+
 
 class ToolCallResponse(BaseModel):
     """Tool call details attached to an assistant message."""
 
     id: UUID
     name: str
-    arguments: dict
+    arguments: dict[str, JsonValue]
     content: str
     is_error: bool
 

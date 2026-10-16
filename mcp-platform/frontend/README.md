@@ -77,6 +77,8 @@ frontend/
 
 The app layout owns the navigation shell. The chat feature owns its header controls, conversation sidebar, messages, composer, API service, stream reader, and TanStack-backed `ChatStore`. Documents owns its model, API service, and page. MCP status is shared by the header and settings page, so its service lives in `core/mcp`. Each component keeps its styles in a sibling CSS file; `styles.css` holds global base styles. Authentication is not enabled.
 
+The MCP status API returns one row per configured server. Settings shows each server's tools and connection state; the chat header shows the number of connected enabled servers.
+
 | Route             | Current screen                                                                |
 | ----------------- | ----------------------------------------------------------------------------- |
 | `/`               | Chat, conversation history, model picker, tool results, and stream debug view |

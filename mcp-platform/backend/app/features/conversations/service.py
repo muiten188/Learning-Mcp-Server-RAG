@@ -1,6 +1,5 @@
 """Conversation use cases and response mapping."""
 
-from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +12,8 @@ from app.features.conversations.schemas import (
     MessageResponse,
     ToolCallResponse,
 )
+from app.features.mcp.contracts import ToolInvocation
+from app.integrations.ollama.schemas import ChatMessage
 
 
 class ConversationNotFoundError(Exception):
@@ -57,7 +58,7 @@ class ConversationService:
             for row in rows
         ]
 
-    async def load_chat_history(self, conversation_id: UUID) -> list[dict[str, str]]:
+    async def load_chat_history(self, conversation_id: UUID) -> list[ChatMessage]:
         """Load the last 20 persisted messages for an Ollama request.
 
         Raises:
@@ -67,12 +68,12 @@ class ConversationService:
         if row is None:
             raise ConversationNotFoundError
         return [
-            {"role": message.role, "content": message.content}
+            ChatMessage(role=message.role, content=message.content)
             for message in row.messages[-20:]
         ]
 
     async def save_assistant(
-        self, conversation_id: UUID, answer: str, calls: list[dict[str, Any]]
+        self, conversation_id: UUID, answer: str, calls: list[ToolInvocation]
     ) -> UUID:
         """Persist an assistant answer and its completed tool calls."""
         assistant = Message(

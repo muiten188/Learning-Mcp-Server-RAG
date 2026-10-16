@@ -1,0 +1,7 @@
+[
+  {"name": "files", "url": "http://mcp-files:8101/mcp", "enabled": true},
+  {"name": "weather", "url": "http://mcp-weather:8102/mcp", "enabled": true},
+  {"name": "database", "url": "http://mcp-database:8103/mcp", "enabled": true},
+  {"name": "documents", "url": "http://mcp-documents:8104/mcp", "enabled": true},
+  {"name": "web", "url": "http://mcp-web:8105/mcp", "enabled": true}
+]

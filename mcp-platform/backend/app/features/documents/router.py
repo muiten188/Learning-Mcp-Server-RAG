@@ -1,6 +1,7 @@
 """Document upload and listing HTTP routes."""
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,3 +59,14 @@ async def documents(
 ) -> list[DocumentStatus]:
     """List uploaded and seeded documents with their processing states."""
     return await DocumentService(db).list_recent()
+
+
+@router.get("/{document_id}", response_model=DocumentStatus)
+async def document_status(
+    document_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]
+) -> DocumentStatus:
+    """Get one uploaded document's ingestion state by UUID."""
+    status = await DocumentService(db).get_status(document_id)
+    if status is None:
+        raise HTTPException(404, "Document not found")
+    return status

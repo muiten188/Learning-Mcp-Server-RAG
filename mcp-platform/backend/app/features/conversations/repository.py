@@ -17,7 +17,9 @@ class ConversationRepository:
 
     async def get(self, conversation_id: UUID) -> Conversation | None:
         """Find a conversation by ID without loading messages."""
-        return await self._session.get(Conversation, conversation_id)
+        return await self._session.scalar(
+            select(Conversation).where(Conversation.id == conversation_id)
+        )
 
     async def get_with_messages(self, conversation_id: UUID) -> Conversation | None:
         """Load a conversation with its messages and tool calls."""

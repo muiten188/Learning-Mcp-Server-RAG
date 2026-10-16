@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.rag.repository import has_chunks, nearest_chunks
+from app.features.rag.schemas import RetrievedChunk
 from app.integrations.ollama.client import Ollama
 
 
@@ -23,7 +24,7 @@ def chunks(text: str, size: int = 1200, overlap: int = 150) -> list[str]:
 
 async def retrieve(
     db: AsyncSession, query: str, ollama: Ollama, limit: int = 4
-) -> list[tuple[str, str]]:
+) -> list[RetrievedChunk]:
     """Retrieve ready document chunks nearest to a query embedding.
 
     Args:
@@ -33,7 +34,7 @@ async def retrieve(
         limit: Maximum matching chunks.
 
     Returns:
-        Filename and content pairs ordered by vector distance.
+        Named chunks ordered by vector distance.
     """
     if not await has_chunks(db):
         return []

@@ -8,12 +8,13 @@
 - For every task involving `mcp-platform/frontend`, read and follow
   `.agents/skills/angular-standard/SKILL.md` alongside this file.
 
-## Java
-- Always generate JavaDoc for new public and protected methods.
-- Document parameters, return values, and exceptions.
-- Follow Java naming conventions.
+## Python
+- Give backend functions explicit, named return contracts for structured values. Prefer feature-owned models, dataclasses, or typed schemas over positional tuples, untyped dictionaries, `Any`, or implicit values. Validate external JSON at the integration boundary.
+- Add docstrings for new public classes, functions, and methods.
+- Document parameters, return values, and raised exceptions where applicable.
+- Follow Python naming conventions and existing project style.
 - Reuse existing utilities and services.
-- Avoid unnecessary method extraction.
+- Avoid unnecessary function extraction.
 
 ## TypeScript
 - Always generate TSDoc for new exported functions,
@@ -23,6 +24,7 @@
 - Follow existing Angular conventions.
 
 ## Code Changes
+- For every change, check whether any README describes the affected behavior or configuration; update each affected README when its information changes.
 - Preserve backward compatibility.
 - Avoid unnecessary refactoring.
 - Keep changes minimal and focused.

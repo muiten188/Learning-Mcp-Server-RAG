@@ -16,7 +16,9 @@ class DocumentRepository:
 
     async def get(self, document_id: UUID) -> Document | None:
         """Find one document by ID."""
-        return await self._session.get(Document, document_id)
+        return await self._session.scalar(
+            select(Document).where(Document.id == document_id)
+        )
 
     async def get_by_filename(self, filename: str) -> UUID | None:
         """Find a document ID by its filename."""

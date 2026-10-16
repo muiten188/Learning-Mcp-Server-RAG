@@ -2,7 +2,9 @@
   <div class="model-picker">
     <span id="model-label">Model</span>
     <div brnPopover brnSelect [value]="store.model()" (valueChange)="store.model.set($event || '')">
-      <button brnSelectTrigger type="button" aria-labelledby="model-label" class="model-trigger">{{ store.model() || 'Select model' }} <span aria-hidden="true">▾</span></button>
+      <button brnSelectTrigger type="button" aria-labelledby="model-label" class="model-trigger">
+        {{ store.model() || 'Select model' }} <span aria-hidden="true">▾</span>
+      </button>
       <ng-template brnPopoverContent>
         <div brnSelectContent class="model-menu">
           <div brnSelectList>
@@ -13,9 +15,9 @@
         </div>
       </ng-template>
     </div>
-  </div
-  ><span class="status" [class.offline]="mcp.servers()[0]?.status !== 'connected'"
-    >? MCP {{ mcp.servers()[0]?.status || 'unknown' }}</span
+  </div>
+  <span class="status" [class.offline]="mcp.connectedCount() === 0"
+    >MCP {{ mcp.connectedCount() }}/{{ mcp.totalCount() }} connected</span
   ><button brnButton type="button" (click)="store.debug.set(!store.debug())">
     {{ store.debug() ? 'Hide' : 'Show' }} debug
   </button>

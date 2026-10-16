@@ -244,50 +244,79 @@ Phase 2 turns the CLI host into a **web application**: a FastAPI server hosts th
 
 > **Why a web server?** In MCP terms, the FastAPI app becomes the **Host**. Browsers can't speak stdio or hold MCP sessions, so the backend owns the MCP clients, the LLM calls, and the tool loop. The browser only sends messages and renders streamed events.
 
-## Target architecture
+## Implemented architecture
+
+### Overall view
+
+Each box below is a separate Compose service. The frontend sends chat requests to FastAPI; the AI agent uses Ollama and calls tools through the MCP hub. Each MCP server runs in its own container. The API and worker share PostgreSQL, Redis, and Ollama as supporting services.
+
+```mermaid
+flowchart TB
+    USER[Browser] --> FE[Angular 22 frontend<br/>Nginx container]
+    FE -->|REST and SSE| API[FastAPI<br/>AI agent and MCP hub container]
+
+    subgraph TOOLS[Independent MCP server containers]
+        FILES[Files MCP]
+        WEATHER[Weather MCP]
+        DATABASE[Database MCP]
+        DOCUMENTS[Documents MCP]
+        WEB[Web MCP]
+    end
+
+    API -->|Streamable HTTP| FILES
+    API -->|Streamable HTTP| WEATHER
+    API -->|Streamable HTTP| DATABASE
+    API -->|Streamable HTTP| DOCUMENTS
+    API -->|Streamable HTTP| WEB
+
+    subgraph SUPPORT[Supporting containers]
+        PG[(PostgreSQL and pgvector)]
+        REDIS[(Redis)]
+        OLLAMA[Ollama]
+        WORKER[Celery worker]
+    end
+
+    API --> PG
+    API --> REDIS
+    API --> OLLAMA
+    REDIS --> WORKER
+    WORKER --> PG
+    WORKER --> OLLAMA
+    DATABASE --> PG
+    DOCUMENTS -->|document API| API
+```
+
+### Service connections
+
+The [Compose file](mcp-platform/compose.yaml) runs the Angular frontend, FastAPI API, Celery worker, PostgreSQL with pgvector, Redis, Ollama, and five independent MCP server containers. The frontend reaches the API through Nginx. The API owns the chat loop: it retrieves document context, sends the model available tool schemas, and routes each model-selected tool call through the MCP hub. Each MCP server has its own image and dependencies.
 
 ```mermaid
 flowchart LR
-    subgraph Browser
-        UI[Angular 22 Chat UI]
-    end
-
-    subgraph Backend[FastAPI Host - Uvicorn]
-        API[REST + SSE endpoints]
-        CHAT[Chat orchestrator<br/>tool loop]
-        HUB[MCP Hub<br/>multi-server clients]
-        RAG[RAG service]
-    end
-
-    subgraph Workers
-        CEL[Celery workers]
-        RED[(Redis<br/>broker + results)]
-    end
-
-    DB[(PostgreSQL<br/>+ pgvector)]
-    OLL[Ollama<br/>llama3.1 / qwen2.5 / mistral]
-
-    subgraph MCPServers[MCP Servers]
-        S1[files server]
-        S2[weather server]
-        S3[database server]
-    end
-
-    UI -- HTTP / SSE --> API
-    API --> CHAT
-    CHAT --> RAG
-    CHAT --> HUB
-    CHAT -- httpx --> OLL
-    RAG --> DB
-    API --> DB
-    API -- enqueue --> RED
-    RED --> CEL
-    CEL --> DB
-    CEL -- embeddings --> OLL
-    HUB -- stdio / HTTP --> S1
-    HUB -- stdio / HTTP --> S2
-    HUB -- stdio / HTTP --> S3
+    USER[Browser] --> FE[Angular and Nginx<br/>frontend :4200]
+    FE -->|REST and chat SSE| API[FastAPI<br/>api :8000]
+    API --> CHAT[Chat orchestrator]
+    CHAT -->|model and embeddings| OLL[Ollama]
+    CHAT --> RAG[RAG retrieval]
+    CHAT --> HUB[MCP hub]
+    RAG --> PG[(PostgreSQL + pgvector)]
+    API --> PG
+    API -->|jobs| RED[(Redis)]
+    RED --> WORKER[Celery worker]
+    WORKER --> PG
+    WORKER --> OLL
+    HUB -->|Streamable HTTP| FILES[mcp-files]
+    HUB -->|Streamable HTTP| WEATHER[mcp-weather]
+    HUB -->|Streamable HTTP| DATABASE[mcp-database]
+    HUB -->|Streamable HTTP| DOCUMENTS[mcp-documents]
+    HUB -->|Streamable HTTP| WEB[mcp-web]
+    FILES --> SPACE[(workspace mount)]
+    DATABASE -->|read-only counts| PG
+    DOCUMENTS -->|document REST API| API
+    WEATHER -->|weather API| EXT[External web APIs]
+    WEB -->|crawl requested URL| EXT
 ```
+
+The API reads MCP endpoints from the [container registry](mcp-platform/mcp_servers.container.json); a host-run backend uses the [loopback registry](mcp-platform/mcp_servers.json). The hub qualifies tool names with the server name, such as `files__create_file`, so names cannot collide. It connects to servers per request and reports an unavailable server without hiding tools from healthy servers. The files server accesses only its workspace mount; the database server performs fixed read-only queries; and the documents server uses the API instead of importing backend code. See the [MCP server guide](mcp-platform/mcp_servers/README.md) for deployment and extension.
 
 ## Tech stack
 
@@ -297,7 +326,7 @@ flowchart LR
 | **API framework** | FastAPI | Typed REST/SSE endpoints, automatic OpenAPI docs at `/docs` |
 | **Validation** | Pydantic | Request/response schemas, tool-call payload validation |
 | **Configuration** | pydantic-settings | Typed settings from `.env` (DB URL, Ollama URL, Redis URL, default model) |
-| **ORM** | SQLAlchemy 2.x (async) | Models for conversations, messages, documents, MCP servers |
+| **ORM** | SQLAlchemy 2.x (async) | Models for conversations, messages, documents, and document chunks |
 | **Migrations** | Alembic | Versioned schema changes (including enabling `pgvector`) |
 | **HTTP client** | httpx | Async calls to Ollama and external APIs (Open-Meteo, crawler) |
 | **Job queue** | Celery + Redis | Long-running jobs: document ingestion, embedding, web crawling |
@@ -309,64 +338,41 @@ flowchart LR
 | **Icons** | Lucide Angular | Consistent icon set |
 | **Markdown** | ngx-markdown | Render assistant answers (code blocks, tables, lists) |
 
-## Project structure (Phase 2)
+## Project structure (web platform)
 
+```text
+mcp-platform/
+  compose.yaml                     Full local stack
+  mcp_servers.container.json      MCP URLs inside Compose
+  mcp_servers.json                MCP URLs for a host-run backend
+  backend/
+    Containerfile                  Shared API and worker image
+    alembic/                       Database migrations
+    app/core/                      Settings and database sessions
+    app/features/                  Chat, documents, MCP hub, RAG, and other features
+    app/integrations/              Ollama client
+    app/workers/                   Celery tasks
+  mcp_servers/
+    Containerfile                  Builds one MCP image per service
+    files/                         Workspace file tools
+    weather/                       Weather tools
+    database/                      Read-only database tools
+    documents/                     Document workflow tools
+    web/                           Web crawling tool
+  frontend/                        Angular app and Nginx image
+  data/                            Seed RAG documents
+  workspace/                       Files server mount
+  uploads/                         Shared API and worker uploads
 ```
-mcp-learning/
-├── README.md
-├── docker-compose.yml           ← postgres (pgvector), redis
-├── mcp_servers.json             ← registry of MCP servers (seed config)
-├── servers/                     ← MCP servers (moved from server.py)
-│   ├── files_server.py
-│   ├── weather_server.py
-│   └── database_server.py
-├── backend/
-│   ├── pyproject.toml
-│   ├── alembic.ini
-│   ├── alembic/
-│   │   └── versions/
-│   └── app/
-│       ├── main.py              ← FastAPI app factory, lifespan (start/stop MCP hub)
-│       ├── core/
-│       │   ├── config.py        ← pydantic-settings
-│       │   └── db.py            ← async engine + session
-│       ├── models/              ← SQLAlchemy models
-│       ├── schemas/             ← Pydantic schemas
-│       ├── api/
-│       │   ├── chat.py          ← POST /api/chat (SSE stream)
-│       │   ├── conversations.py
-│       │   ├── models.py        ← GET /api/models (Ollama models)
-│       │   ├── mcp_servers.py   ← CRUD + health for MCP servers
-│       │   └── documents.py     ← upload docs for RAG
-│       ├── services/
-│       │   ├── llm.py           ← Ollama client (httpx)
-│       │   ├── mcp_hub.py       ← multi-server MCP manager
-│       │   ├── orchestrator.py  ← the tool loop (from client.py)
-│       │   └── rag.py           ← pgvector retrieval
-│       └── workers/
-│           ├── celery_app.py
-│           └── tasks.py         ← ingest_document, crawl_and_index
-├── frontend/                    ← Angular 22 app
-│   └── src/app/
-│       ├── core/                ← api client, settings store
-│       ├── features/
-│       │   ├── chat/            ← sidebar, message list, composer, tool-call cards
-│       │   ├── servers/         ← MCP server management page
-│       │   └── documents/       ← RAG document manager
-│       └── shared/ui/           ← Spartan/Zard wrappers
-└── data/                        ← seed RAG text files (imported into pgvector)
-```
-
----
 
 ## Backend
 
 ### Responsibilities
 
-1. **Host the MCP client(s)** — start them at app startup (FastAPI `lifespan`), keep sessions alive, close on shutdown.
+1. **Host the MCP client(s)** — connect enabled remote servers over Streamable HTTP for each chat request and close client sessions when the request ends.
 2. **Run the tool loop** — the same flow as `client.py`, but per request and streamed to the browser.
 3. **Persist everything** — conversations, messages, tool calls, documents, embeddings.
-4. **Offload slow work** — embedding and crawling run in Celery workers, not in the request.
+4. **Offload document work** — ingestion and embedding run in Celery workers; the webpage MCP tool fetches pages during a chat request.
 
 ### Configuration (`pydantic-settings`)
 
@@ -398,9 +404,7 @@ settings = Settings()
 | `DELETE` | `/api/conversations/{id}` | Delete a conversation |
 | `GET` | `/api/models` | List models installed in Ollama (for the model picker) |
 | `GET` | `/api/mcp-servers` | List registered MCP servers + status + tools |
-| `POST` | `/api/mcp-servers` | Register a new MCP server |
-| `PATCH` | `/api/mcp-servers/{id}` | Enable/disable a server |
-| `DELETE` | `/api/mcp-servers/{id}` | Remove a server |
+| Planned | `/api/mcp-servers` write endpoints | Future runtime registration; currently edit `mcp-platform/mcp_servers.json` |
 | `POST` | `/api/documents` | Upload a document → enqueues an ingestion job |
 | `GET` | `/api/jobs/{id}` | Poll status of a Celery job |
 | `GET` | `/health` | Liveness check |
@@ -752,107 +756,21 @@ ollama pull mistral
 
 ## Feature: multi-server MCP hub
 
-> Build a multi-server setup — connect the client to multiple MCP servers (e.g. one for files, one for weather, one for databases) and let the LLM choose across all of them.
+The implemented platform runs five independently deployable MCP servers from [`mcp-platform/mcp_servers/`](mcp-platform/mcp_servers/). Each server has its own image and Python requirements, and exposes Streamable HTTP at `/mcp`. The FastAPI hub connects to their URLs, discovers tools, and gives the LLM qualified names such as `files__create_file` and `weather__get_weather`. The LLM chooses which tools to call; the hub routes each call to its owning server.
 
-In Phase 1 there was one server (`server.py`). In Phase 2 the backend runs an **MCP Hub** that holds one `ClientSession` per server and presents all their tools to the LLM as a single list.
+| Server | Tools | Container port |
+|--------|-------|----------------|
+| `files` | `create_file`, `list_files`, `read_file`, `search_files` | 8101 |
+| `weather` | `get_weather` | 8102 |
+| `database` | `database_summary`, `database_tables` | 8103 |
+| `documents` | `list_documents`, `document_status`, `embed_pending_documents` | 8104 |
+| `web` | `crawl_webpage` | 8105 |
 
-### Splitting the server
+The [container registry](mcp-platform/mcp_servers.container.json) uses Compose service names, while the [host registry](mcp-platform/mcp_servers.json) uses the published loopback ports. Each entry has a unique `name`, an HTTP `url`, and an `enabled` flag. The registry is static; the API reports server status but does not edit registrations. A disconnected server is reported separately while healthy servers remain available. The hub opens HTTP client sessions per request and closes them afterward.
 
-| Server | Tools | Transport |
-|--------|-------|-----------|
-| `files` | `create_file`, `read_file`, `list_files` | stdio |
-| `weather` | `get_weather` | stdio |
-| `database` | `query_documents`, `list_tables` (read-only SQL) | stdio (or HTTP) |
+See the [MCP server deployment guide](mcp-platform/mcp_servers/README.md) for adding a server and running the containers.
 
-Each server stays unaware of the LLM and of the other servers — the Hub does all the coordination.
-
-### Server registry (`mcp_servers.json`)
-
-```json
-{
-  "servers": [
-    { "name": "files",    "transport": "stdio", "command": "python", "args": ["servers/files_server.py"] },
-    { "name": "weather",  "transport": "stdio", "command": "python", "args": ["servers/weather_server.py"] },
-    { "name": "database", "transport": "stdio", "command": "python", "args": ["servers/database_server.py"] }
-  ]
-}
-```
-
-This file seeds the `mcp_servers` table on first start; after that the UI (`/servers`) manages them.
-
-### Hub design
-
-```mermaid
-flowchart TB
-    LLM[LLM sees one flat tool list]
-    HUB[MCP Hub]
-    LLM -- "files__create_file<br/>weather__get_weather<br/>database__list_tables" --> HUB
-    HUB -- "strip prefix, route" --> A[files session]
-    HUB --> B[weather session]
-    HUB --> C[database session]
-```
-
-**Key idea — namespacing.** Two servers might both expose a tool called `search`. The Hub prefixes each tool with its server name (`weather__get_weather`) when giving schemas to the LLM, then splits the prefix off to route the call.
-
-```python
-# backend/app/services/mcp_hub.py
-from contextlib import AsyncExitStack
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
-
-SEP = "__"
-
-class McpHub:
-    def __init__(self):
-        self._stack = AsyncExitStack()
-        self._sessions: dict[str, ClientSession] = {}
-
-    async def connect(self, name: str, command: str, args: list[str]):
-        params = StdioServerParameters(command=command, args=args)
-        read, write = await self._stack.enter_async_context(stdio_client(params))
-        session = await self._stack.enter_async_context(ClientSession(read, write))
-        await session.initialize()
-        self._sessions[name] = session
-
-    async def list_tools(self) -> list[dict]:
-        """All tools from all servers, in Ollama's tool-schema format."""
-        tools = []
-        for server, session in self._sessions.items():
-            for t in (await session.list_tools()).tools:
-                tools.append({
-                    "type": "function",
-                    "function": {
-                        "name": f"{server}{SEP}{t.name}",
-                        "description": f"[{server}] {t.description}",
-                        "parameters": t.inputSchema,
-                    },
-                })
-        return tools
-
-    async def call_tool(self, namespaced: str, arguments: dict):
-        server, tool = namespaced.split(SEP, 1)
-        return await self._sessions[server].call_tool(tool, arguments)
-
-    async def close(self):
-        await self._stack.aclose()
-```
-
-### Things to handle
-
-- **A server fails to start or crashes** — mark it `unavailable`, keep the others working, show it in the UI status pill.
-- **Too many tools confuse small models** — local models get worse as the tool list grows. Allow enabling/disabling servers *per conversation*, or pick the top-N relevant tools per request.
-- **Safety** — the `files` server must stay sandboxed to `workspace/`; the `database` server must be read-only.
-- **Lifecycle** — connect all servers in FastAPI's `lifespan`, close them on shutdown (the `AsyncExitStack` above handles this).
-
-### Try it
-
-| User input | Expected behaviour |
-|------------|--------------------|
-| `weather in Hanoi, then save it to weather.txt` | LLM chains `weather__get_weather` → `files__create_file` across **two servers** |
-| `which tables do I have?` | LLM picks `database__list_tables` |
-| Disable the `weather` server in the UI, ask for the weather | LLM can't call it — observe how each model responds |
-
----
+For IntelliJ development, use the [MCP server run/debug setup](mcp-platform/mcp_servers/README.md#develop-and-debug-in-intellij-idea) to start individual servers with breakpoints on ports 8101–8105.
 
 ## How to run (Phase 2 — Web)
 
@@ -894,7 +812,7 @@ ng serve                                         # http://localhost:4200
 
 # Deployment with Podman (Phase 4)
 
-Phase 4 packages the whole platform as containers and runs it with **Podman** — rootless, daemonless, and compatible with Docker-style Compose files. The same setup works on a Windows/macOS dev machine (via `podman machine`) and on a Linux server (with systemd Quadlets).
+The section below is the original Phase 4 deployment proposal. The implemented Compose setup is documented in [mcp-platform/IMPLEMENTATION.md](mcp-platform/IMPLEMENTATION.md); it includes Ollama and five independent MCP containers.
 
 ## Container breakdown
 
@@ -912,30 +830,12 @@ Phase 4 packages the whole platform as containers and runs it with **Podman** �
 
 ### Deployment diagram
 
-```mermaid
-flowchart LR
-    USER[Browser] -->|:80| FE[frontend<br/>Nginx + Angular]
-
-    subgraph NET[Podman network: mcpnet]
-        FE -->|/api proxy| API[api<br/>FastAPI + MCP Hub]
-        API --> PG[(postgres<br/>pgvector)]
-        API --> RED[(redis)]
-        WRK[worker<br/>Celery] --> RED
-        WRK --> PG
-        SCH[scheduler<br/>Celery Beat] --> RED
-        FLW[flower<br/>optional] --> RED
-    end
-
-    API -->|host.containers.internal:11434| OLL[Ollama<br/>on the host]
-    WRK -->|embeddings| OLL
-```
-
-Only `frontend` (and optionally `flower`) publish ports. Everything else is reachable only inside the Podman network.
+The current container topology is shown in [Implemented architecture](#implemented-architecture). The original Phase 4 table above is a proposal; `scheduler` and `flower` are not services in the current Compose file.
 
 ### What runs where
 
-- **Ollama stays on the host** (not in a container). It needs direct GPU access and already manages its own model files. Containers reach it at `http://host.containers.internal:11434`. A containerised Ollama is possible later, but GPU passthrough under rootless Podman takes extra setup.
-- **MCP servers run inside the `api` container** as stdio subprocesses (spawned by the MCP Hub). That means the `api` image must contain `servers/` and the Python dependencies they need. The `worker` does not need them.
+- **Ollama** runs in a container in the implemented Compose setup; a host-run Ollama can be configured through `OLLAMA_BASE_URL`.
+- **MCP servers run in separate containers**. The `api` connects to them using Streamable HTTP; each server image has only its own dependencies.
 - **Scheduler must be a single instance.** Running two Beat containers would trigger every scheduled job twice.
 
 ## Project structure additions
@@ -955,39 +855,9 @@ mcp-learning/
 
 ## Images
 
-### Backend (`backend/Containerfile`)
+### Backend and MCP server images
 
-```dockerfile
-FROM docker.io/library/python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-WORKDIR /srv
-
-# dependencies first (better layer caching)
-COPY backend/pyproject.toml ./
-RUN pip install --no-cache-dir .
-
-# application code, MCP servers, seed data
-COPY backend/app ./app
-COPY backend/alembic ./alembic
-COPY backend/alembic.ini ./
-COPY servers ./servers
-COPY mcp_servers.json ./
-COPY data ./data
-
-# run as a non-root user
-RUN useradd --create-home appuser \
-    && mkdir -p /srv/workspace /srv/uploads \
-    && chown -R appuser /srv
-USER appuser
-
-EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-> Build from the **repository root** so `servers/` and `data/` are inside the build context: `podman build -f backend/Containerfile -t mcp-backend .`
+The implemented images are in [`mcp-platform/backend/Containerfile`](mcp-platform/backend/Containerfile) and [`mcp-platform/mcp_servers/Containerfile`](mcp-platform/mcp_servers/Containerfile). The API and worker share the backend image. Each MCP service builds an independent image from its own `server.py` and `requirements.txt` using the `SERVICE` build argument. Build and run them together from `mcp-platform` with `docker compose up -d --build` or `podman compose up -d --build`.
 
 ### Frontend (`frontend/Containerfile`)
 
@@ -1353,7 +1223,7 @@ Create one `.container` file per service (plus `.network` and `.volume` files). 
 | Scheduled jobs run twice | More than one `scheduler` container running |
 | `api` restarts in a loop | Postgres not healthy yet, or the migration failed — read `podman compose logs api` |
 | `relation ... does not exist` | Migrations did not run — `podman compose exec api alembic upgrade head` |
-| MCP tools missing in the UI | MCP server subprocess failed to start inside `api` — check the API logs and that `servers/` was copied into the image |
+| MCP tools missing in the UI | Check the MCP container logs and its URL in `mcp_servers.container.json`; `/api/mcp-servers` reports connection errors |
 
 ---
 
@@ -1378,7 +1248,7 @@ mcp-learning/
 
 ## What to try next
 
-1. **Add SSE/HTTP transport** — Run the MCP server as a standalone web service instead of a subprocess. Change `mcp.run(transport="sse", port=8080)` in `server.py` and connect to it from the client using `SSEServerParameters`. *(In Phase 2, the Hub can mix stdio and HTTP servers.)*
+1. **Explore Streamable HTTP transport** ? Compare the Phase 1 CLI stdio server with the independent HTTP server containers used by the implemented Phase 2 platform.
 
 2. **Add a new API tool** — Try wrapping another free API (e.g. a dictionary API, a joke API, or a currency converter) as an MCP tool.
 
